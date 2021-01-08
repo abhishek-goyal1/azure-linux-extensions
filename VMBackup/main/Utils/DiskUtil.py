@@ -27,6 +27,7 @@ import uuid
 import glob
 from common import DeviceItem
 import Utils.HandlerUtil
+from time import time
 import traceback
 
 class DiskUtil(object):
@@ -144,14 +145,22 @@ class DiskUtil(object):
             self.logger.log(errMsg, True, 'Error')
             is_lsblk_path_wrong = True
         if is_lsblk_path_wrong == False :
-            out_lsblk_output, err = p.communicate()
-            if sys.version_info > (3,):
-                out_lsblk_output = str(out_lsblk_output, encoding='utf-8', errors="backslashreplace")
-            else:
-                out_lsblk_output = str(out_lsblk_output)    
-            error_msg = str(err)
-            if(error_msg is not None and error_msg.strip() != ""):
-                self.logger.log(str(err), True)
+            lsblkTimeout = 60
+            lsblkPath = '/etc/azure/lsblk_out.txt'
+            try:
+                out_lsblk_output, err = p.communicate(timeout=lsblkTimeout)
+                if sys.version_info > (3,):
+                    out_lsblk_output = str(out_lsblk_output, encoding='utf-8', errors="backslashreplace")
+                else:
+                    out_lsblk_output = str(out_lsblk_output)    
+                error_msg = str(err)
+                if(error_msg is not None and error_msg.strip() != ""):
+                    self.logger.log(str(err), True)
+            except subprocess.TimeoutExpired:
+                self.logger.log("LSBLK command stuck and not working. Reached timeout", True, 'Error')
+                with open(lsblkPath, "r") as lsblk_file:
+                    out_lsblk_output = lsblk_file.read()
+                error_msg = "None"
         return is_lsblk_path_wrong, out_lsblk_output, error_msg
     
     def get_which_command_result(self, program_to_locate):
