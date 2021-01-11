@@ -145,10 +145,11 @@ class DiskUtil(object):
             self.logger.log(errMsg, True, 'Error')
             is_lsblk_path_wrong = True
         if is_lsblk_path_wrong == False :
-            lsblkTimeout = 60
+            lsblkTimeout = 5
             lsblkPath = '/etc/azure/lsblk_out.txt'
             try:
                 out_lsblk_output, err = p.communicate(timeout=lsblkTimeout)
+                self.logger.log("LSBLK command worked fine", True)
                 if sys.version_info > (3,):
                     out_lsblk_output = str(out_lsblk_output, encoding='utf-8', errors="backslashreplace")
                 else:
@@ -158,8 +159,13 @@ class DiskUtil(object):
                     self.logger.log(str(err), True)
             except subprocess.TimeoutExpired:
                 self.logger.log("LSBLK command stuck and not working. Reached timeout", True, 'Error')
-                with open(lsblkPath, "r") as lsblk_file:
-                    out_lsblk_output = lsblk_file.read()
+                out_lsblk_output="Error"
+                is_lsblk_path_wrong = True
+                if (os.path.isfile(lsblk_path)):
+                    self.logger.log("LSBLK alternate file found. Reading from file.", True)
+                    with open(lsblkPath, "r") as lsblk_file:
+                        out_lsblk_output = lsblk_file.read()
+                    is_lsblk_path_wrong = False
                 error_msg = "None"
         return is_lsblk_path_wrong, out_lsblk_output, error_msg
     
