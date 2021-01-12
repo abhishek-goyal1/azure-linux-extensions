@@ -148,6 +148,7 @@ class DiskUtil(object):
             lsblkTimeout = 5
             lsblkPath = '/etc/azure/lsblk_out.txt'
             try:
+                self.logger.log("LSBLK command communicate called", True)
                 out_lsblk_output, err = p.communicate(timeout=lsblkTimeout)
                 self.logger.log("LSBLK command worked fine", True)
                 if sys.version_info > (3,):
