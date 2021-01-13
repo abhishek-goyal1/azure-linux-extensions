@@ -135,39 +135,18 @@ class DiskUtil(object):
         out_lsblk_output = None
         error_msg = None
         is_lsblk_path_wrong = False
-        try:
-            if(dev_path is None):
-                p = Popen([str(lsblk_path), '-b', '-n','-P','-o','NAME,TYPE,FSTYPE,MOUNTPOINT,LABEL,UUID,MODEL,SIZE'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            else:
-                p = Popen([str(lsblk_path), '-b', '-n','-P','-o','NAME,TYPE,FSTYPE,MOUNTPOINT,LABEL,UUID,MODEL,SIZE',dev_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        except Exception as e:
-            errMsg = 'Exception in lsblk command, error: %s, stack trace: %s' % (str(e), traceback.format_exc())
-            self.logger.log(errMsg, True, 'Error')
-            is_lsblk_path_wrong = True
         if is_lsblk_path_wrong == False :
             lsblkTimeout = 5
             lsblkPath = '/etc/azure/lsblk_out.txt'
-            try:
-                self.logger.log("LSBLK command communicate called", True)
-                out_lsblk_output, err = p.communicate(timeout=lsblkTimeout)
-                self.logger.log("LSBLK command worked fine", True)
-                if sys.version_info > (3,):
-                    out_lsblk_output = str(out_lsblk_output, encoding='utf-8', errors="backslashreplace")
-                else:
-                    out_lsblk_output = str(out_lsblk_output)    
-                error_msg = str(err)
-                if(error_msg is not None and error_msg.strip() != ""):
-                    self.logger.log(str(err), True)
-            except subprocess.TimeoutExpired:
-                self.logger.log("LSBLK command stuck and not working. Reached timeout", True, 'Error')
-                out_lsblk_output="Error"
-                is_lsblk_path_wrong = True
-                if (os.path.isfile(lsblk_path)):
-                    self.logger.log("LSBLK alternate file found. Reading from file.", True)
-                    with open(lsblkPath, "r") as lsblk_file:
-                        out_lsblk_output = lsblk_file.read()
-                    is_lsblk_path_wrong = False
-                error_msg = "None"
+            self.logger.log("LSBLK command skipped", True)
+            out_lsblk_output="Error"
+            is_lsblk_path_wrong = True
+            if (os.path.isfile(lsblk_path)):
+                self.logger.log("LSBLK alternate file found. Reading from file.", True)
+                with open(lsblkPath, "r") as lsblk_file:
+                    out_lsblk_output = lsblk_file.read()
+                is_lsblk_path_wrong = False
+            error_msg = "None"
         return is_lsblk_path_wrong, out_lsblk_output, error_msg
     
     def get_which_command_result(self, program_to_locate):
