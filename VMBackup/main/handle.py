@@ -602,7 +602,7 @@ def enable():
     global backup_logger,hutil,error_msg,para_parser,patch_class_name,orig_distro
     try:
         hutil.do_parse_context('Enable')
-
+        sleep(180)
         backup_logger.log('starting enable', True)
         backup_logger.log("patch_class_name: "+str(patch_class_name)+" and orig_distro: "+str(orig_distro),True)
 
